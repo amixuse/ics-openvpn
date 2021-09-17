@@ -6,21 +6,50 @@
 package de.blinkt.openvpn.core;
 
 import android.os.Build;
+import de.blinkt.openvpn.BuildConfig;
 
 import java.security.InvalidKeyException;
 
 public class NativeUtils {
-    public static native byte[] rsasign(byte[] input, int pkey) throws InvalidKeyException;
+    public static native byte[] rsasign(byte[] input, int pkey, boolean pkcs1padding) throws InvalidKeyException;
 
     public static native String[] getIfconfig() throws IllegalArgumentException;
 
     static native void jniclose(int fdint);
 
-    public static native String getNativeAPI();
+    public static String getNativeAPI()
+    {
+        if (isRoboUnitTest())
+            return "ROBO";
+        else
+            return getJNIAPI();
+    }
+
+    private static native String getJNIAPI();
+
+    public static native String getOpenVPN2GitVersion();
+
+    public static native String getOpenVPN3GitVersion();
+
+    public final static int[] openSSLlengths = {
+        16, 64, 256, 1024, 8 * 1024, 16 * 1024
+    };
+
+    public static native double[] getOpenSSLSpeed(String algorithm, int testnum);
 
     static {
-        System.loadLibrary("opvpnutil");
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN)
-            System.loadLibrary("jbcrypto");
+        if (!isRoboUnitTest()) {
+            System.loadLibrary("ovpnutil");
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN)
+                System.loadLibrary("jbcrypto");
+
+            if (!BuildConfig.FLAVOR.equals("skeleton")) {
+                System.loadLibrary("osslspeedtest");
+            }
+        }
     }
+
+    public static boolean isRoboUnitTest() {
+        return "robolectric".equals(Build.FINGERPRINT); }
+
 }

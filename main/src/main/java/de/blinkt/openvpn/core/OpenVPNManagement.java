@@ -13,7 +13,7 @@ public interface OpenVPNManagement {
     enum pauseReason {
         noNetwork,
         userPause,
-        screenOff
+        screenOff,
     }
 
     int mBytecountInterval = 2;
@@ -36,4 +36,10 @@ public interface OpenVPNManagement {
     void networkChange(boolean sameNetwork);
 
     void setPauseCallback(PausedStateCallback callback);
+
+    /**
+     * Send the response to a challenge response
+     * @param response  Base64 encoded response
+     */
+    void sendCRResponse(String response);
 }
